@@ -2,6 +2,7 @@ pipeline {
     agent any
     
     environment {
+        TF_WORKSPACE = "${WORKSPACE}/terraform-ec2"
         AWS_REGION = 'ap-south-1'
         AWS_INSTANCE_TYPE = 't3.medium'
     }
@@ -16,7 +17,7 @@ pipeline {
         
         stage('Setup Terraform') {
             steps {
-                dir('/home/ubuntu/terraform-ec2') {
+                dir(TF_WORKSPACE) {
                     // Initialize Terraform
                     sh 'terraform init'
                 }
@@ -25,7 +26,7 @@ pipeline {
         
         stage('Terraform Plan') {
             steps {
-                dir('/home/ubuntu/terraform-ec2') {
+                dir(TF_WORKSPACE) {
                     // Run Terraform plan
                     sh 'terraform plan -var="region=${AWS_REGION}" -var="instance_type=${AWS_INSTANCE_TYPE}" -out=tfplan'
                 }
@@ -34,7 +35,7 @@ pipeline {
         
         stage('Terraform Apply') {
             steps {
-                dir('/home/ubuntu/terraform-ec2') {
+                dir(TF_WORKSPACE) {
                     // Apply Terraform changes
                     sh 'terraform apply -auto-approve tfplan'
                 }
@@ -49,5 +50,11 @@ pipeline {
             }
         }
     }
+    
+    post {
+        always {
+            // Clean up workspace
+            cleanWs()
+        }
+    }
 }
-
