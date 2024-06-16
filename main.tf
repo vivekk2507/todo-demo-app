@@ -3,13 +3,14 @@ provider "aws" {
 }
 
 # Define input variables
-variable "region" {
-  description = "AWS region to deploy resources"
-  type        = string
-}
-
 variable "instance_type" {
   description = "EC2 instance type"
+  type        = string
+  default     = "t3.medium"  # Default instance type
+}
+
+variable "jenkins_ip" {
+  description = "Jenkins' IP address for SSH access in CIDR notation (e.g., x.x.x.x/32)"
   type        = string
 }
 
@@ -25,10 +26,42 @@ resource "local_file" "public_key" {
   content  = tls_private_key.example_key.public_key_openssh
 }
 
-# Use the generated key in AWS instance
+# Create an AWS key pair using the generated SSH key
+resource "aws_key_pair" "example_key" {
+  key_name   = "example-key"
+  public_key = tls_private_key.example_key.public_key_openssh
+}
+
+# Create a security group allowing SSH access from Jenkins IP
+resource "aws_security_group" "instance_sg" {
+  name        = "instance-sg"
+  description = "Security group for EC2 instance allowing SSH from Jenkins"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.jenkins_ip]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "InstanceSecurityGroup"
+  }
+}
+
+# Launch an EC2 instance
 resource "aws_instance" "example" {
-  ami           = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
-  instance_type = var.instance_type  # Use the variable for instance type
+  ami             = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
+  instance_type   = var.instance_type        # Use the variable for instance type
+  key_name        = aws_key_pair.example_key.key_name
+  security_groups = [aws_security_group.instance_sg.name]
 
   tags = {
     Name = "QuarkusAppInstance"
@@ -47,11 +80,10 @@ resource "aws_instance" "example" {
 
     connection {
       type        = "ssh"
-      user        = "ubuntu"
+      user        = "ubuntu"  # Replace with the appropriate user for your AMI
       private_key = tls_private_key.example_key.private_key_pem
       host        = aws_instance.example.public_ip
     }
   }
 }
-
 
