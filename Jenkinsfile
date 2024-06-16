@@ -9,31 +9,36 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                // Checkout the GitHub repository containing Terraform files
                 git branch: 'main', credentialsId: 'github-pat', url: 'https://github.com/vivekk2507/todo-demo-app'
             }
         }
         
         stage('Setup Terraform') {
             steps {
-                dir('') { // No directory specified to run commands in the root of the repository
-                    sh 'terraform init'
+                dir('/var/lib/jenkins/workspace/oproj') {
+                    withAWS(credentials: 'awsdemo') {  // Replace 'aws-credentials-id' with your Jenkins credentials ID
+                        sh 'terraform init'
+                    }
                 }
             }
         }
         
         stage('Terraform Plan') {
             steps {
-                dir('') { // No directory specified to run commands in the root of the repository
-                    sh "terraform plan -var='region=${AWS_REGION}' -var='instance_type=${AWS_INSTANCE_TYPE}' -out=tfplan"
+                dir('/var/lib/jenkins/workspace/oproj') {
+                    withAWS(credentials: 'aws-credentials-id') {
+                        sh 'terraform plan -var="region=${AWS_REGION}" -var="instance_type=${AWS_INSTANCE_TYPE}" -out=tfplan'
+                    }
                 }
             }
         }
         
         stage('Terraform Apply') {
             steps {
-                dir('') { // No directory specified to run commands in the root of the repository
-                    sh 'terraform apply -auto-approve tfplan'
+                dir('/var/lib/jenkins/workspace/oproj') {
+                    withAWS(credentials: 'aws-credentials-id') {
+                        sh 'terraform apply -auto-approve tfplan'
+                    }
                 }
             }
         }
@@ -52,3 +57,4 @@ pipeline {
         }
     }
 }
+
