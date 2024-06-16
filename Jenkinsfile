@@ -15,7 +15,7 @@ pipeline {
         
         stage('Setup Terraform') {
             steps {
-                dir('terraform-ec2') {
+                dir('/var/lib/jenkins/workspace/oproj_ws-cleanup_1718575156214') {
                     sh 'terraform init'
                 }
             }
@@ -23,7 +23,7 @@ pipeline {
         
         stage('Terraform Plan') {
             steps {
-                dir('terraform-ec2') {
+                dir('/var/lib/jenkins/workspace/oproj_ws-cleanup_1718575156214') {
                     sh 'terraform plan -var="region=${AWS_REGION}" -var="instance_type=${AWS_INSTANCE_TYPE}" -out=tfplan'
                 }
             }
@@ -31,7 +31,7 @@ pipeline {
         
         stage('Terraform Apply') {
             steps {
-                dir('terraform-ec2') {
+                 dir('/var/lib/jenkins/workspace/oproj_ws-cleanup_1718575156214') {
                     sh 'terraform apply -auto-approve tfplan'
                 }
             }
