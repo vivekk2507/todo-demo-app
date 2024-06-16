@@ -26,7 +26,7 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('/var/lib/jenkins/workspace/oproj') {
-                    withAWS(credentials: 'aws-credentials-id') {
+                    withAWS(credentials: 'awsdemo') {
                         sh 'terraform plan -var="region=${AWS_REGION}" -var="instance_type=${AWS_INSTANCE_TYPE}" -out=tfplan'
                     }
                 }
@@ -36,7 +36,7 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 dir('/var/lib/jenkins/workspace/oproj') {
-                    withAWS(credentials: 'aws-credentials-id') {
+                    withAWS(credentials: 'awsdemo') {
                         sh 'terraform apply -auto-approve tfplan'
                     }
                 }
