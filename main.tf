@@ -1,8 +1,14 @@
 provider "aws" {
-  region = "ap-south-1"
+  region = var.region  # Use the region variable here
 }
 
 # Define input variables
+variable "region" {
+  description = "AWS region"
+  type        = string
+  default     = "ap-south-1"  # Default region
+}
+
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
