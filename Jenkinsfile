@@ -1,37 +1,22 @@
 pipeline {
     agent any
-
-    environment {
-        TF_VERSION = '0.14.7' // Replace with your Terraform version
-    }
-
     stages {
+        stage('Checkout SCM') {
+            steps {
+                git credentialsId: 'github-pat', url: 'https://github.com/vivekk2507/todo-demo-app'
+            }
+        }
         stage('Clone repository') {
             steps {
-                git url: 'https://github.com/your-repo/todo-demo-app.git', branch: 'main'
+                // Ensure you're using the correct URL and credentials ID
+                git credentialsId: 'github-pat', url: 'https://github.com/your-repo/todo-demo-app.git'
             }
         }
-        stage('Terraform Init') {
-            steps {
-                sh 'terraform init'
-            }
-        }
-        stage('Terraform Apply') {
-            steps {
-                sh 'terraform apply -auto-approve'
-            }
-        }
+        // Other stages...
     }
-
     post {
         always {
             cleanWs()
-        }
-        success {
-            echo 'Pipeline executed successfully!'
-        }
-        failure {
-            echo 'Pipeline execution failed!'
         }
     }
 }
