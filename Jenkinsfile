@@ -1,26 +1,31 @@
 pipeline {
     agent any
+
+    environment {
+        TF_VAR_aws_region = 'ap-south-1'
+    }
+
     stages {
         stage('Checkout SCM') {
             steps {
+                git url: 'https://github.com/vivekk2507/todo-demo-app', branch: 'main'
+            }
+        }
+
+        stage('Setup Terraform') {
+            steps {
                 script {
-                    checkout([$class: 'GitSCM',
-                              branches: [[name: '*/main']],
-                              userRemoteConfigs: [[url: 'https://github.com/vivekk2507/todo-demo-app', credentialsId: 'github-pat']]
-                    ])
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
                 }
             }
         }
-        stage('Clone repository') {
-            steps {
-                git branch: 'main', credentialsId: 'github-pat', url: 'https://github.com/vivekk2507/todo-demo-app'
-            }
-        }
-        // Other stages...
     }
+
     post {
         always {
             cleanWs()
         }
     }
 }
+
