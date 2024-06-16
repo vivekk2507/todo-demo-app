@@ -16,7 +16,7 @@ pipeline {
         
         stage('Setup Terraform') {
             steps {
-                dir('terraform-ec2') {
+                dir('/home/ubuntu/terraform-ec2') {
                     // Initialize Terraform
                     sh 'terraform init'
                 }
@@ -25,7 +25,7 @@ pipeline {
         
         stage('Terraform Plan') {
             steps {
-                dir('terraform-ec2') {
+                dir('/home/ubuntu/terraform-ec2') {
                     // Run Terraform plan
                     sh 'terraform plan -var="region=${AWS_REGION}" -var="instance_type=${AWS_INSTANCE_TYPE}" -out=tfplan'
                 }
@@ -34,7 +34,7 @@ pipeline {
         
         stage('Terraform Apply') {
             steps {
-                dir('terraform-ec2') {
+                dir('/home/ubuntu/terraform-ec2') {
                     // Apply Terraform changes
                     sh 'terraform apply -auto-approve tfplan'
                 }
