@@ -12,6 +12,7 @@ variable "instance_type" {
 variable "jenkins_ip" {
   description = "Jenkins' IP address for SSH access in CIDR notation (e.g., x.x.x.x/32)"
   type        = string
+  default     = "43.204.143.128/32"  # Replace with your Jenkins IP address in CIDR notation
 }
 
 # Generate SSH key pair
