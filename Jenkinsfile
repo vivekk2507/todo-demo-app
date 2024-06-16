@@ -4,6 +4,7 @@ pipeline {
     environment {
         AWS_REGION = 'ap-south-1'
         AWS_INSTANCE_TYPE = 't3.medium'
+        JENKINS_IP = '43.204.143.128/32'  // Replace with your actual Jenkins IP address in CIDR notation
     }
     
     stages {
@@ -16,7 +17,7 @@ pipeline {
         stage('Setup Terraform') {
             steps {
                 dir('/var/lib/jenkins/workspace/oproj') {
-                    withAWS(credentials: 'awsdemo') {  // Replace 'aws-credentials-id' with your Jenkins credentials ID
+                    withAWS(credentials: 'awsdemo') {
                         sh 'terraform init'
                     }
                 }
@@ -27,7 +28,7 @@ pipeline {
             steps {
                 dir('/var/lib/jenkins/workspace/oproj') {
                     withAWS(credentials: 'awsdemo') {
-                        sh 'terraform plan -var="region=${AWS_REGION}" -var="instance_type=${AWS_INSTANCE_TYPE}" -out=tfplan'
+                        sh 'terraform plan -var="region=${AWS_REGION}" -var="instance_type=${AWS_INSTANCE_TYPE}" -var="jenkins_ip=${JENKINS_IP}" -out=tfplan'
                     }
                 }
             }
