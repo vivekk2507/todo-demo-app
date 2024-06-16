@@ -2,9 +2,20 @@ provider "aws" {
   region = "ap-south-1"
 }
 
+# Define input variables
+variable "region" {
+  description = "AWS region to deploy resources"
+  type        = string
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+}
+
 resource "aws_instance" "example" {
   ami           = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
-  instance_type = "t3.medium"
+  instance_type = var.instance_type  # Use the variable for instance type
 
   tags = {
     Name = "QuarkusAppInstance"
