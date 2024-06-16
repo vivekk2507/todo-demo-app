@@ -5,7 +5,7 @@ pipeline {
         stage('Setup') {
             steps {
                 // Checkout your Git repository where Terraform files are located
-                git 'https://github.com/your-repo/terraform-ec2.git'
+                git url: 'https://github.com/vivekk2507/todo-demo-app', branch: 'main'
             }
         }
         stage('Terraform') {
