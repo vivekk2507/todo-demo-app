@@ -13,23 +13,27 @@ variable "instance_type" {
   type        = string
 }
 
-# Create SSH key pair
-resource "aws_key_pair" "example_keypair" {
-  key_name   = "example-keypair"  # Replace with your desired key pair name
-  public_key = file("~/.ssh/id_rsa.pub")  # Replace with the path to your SSH public key
+# Generate SSH key pair
+resource "tls_private_key" "example_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
-# EC2 instance resource
+# Save the public key to a local file
+resource "local_file" "public_key" {
+  filename = "${path.module}/id_rsa.pub"
+  content  = tls_private_key.example_key.public_key_openssh
+}
+
+# Use the generated key in AWS instance
 resource "aws_instance" "example" {
   ami           = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
-  instance_type = var.instance_type       # Use the variable for instance type
-  key_name      = aws_key_pair.example_keypair.key_name  # Reference the created SSH key pair
+  instance_type = var.instance_type  # Use the variable for instance type
 
   tags = {
     Name = "QuarkusAppInstance"
   }
 
-  # Provisioner block for remote execution
   provisioner "remote-exec" {
     inline = [
       "sudo apt-get update -y",
@@ -44,11 +48,10 @@ resource "aws_instance" "example" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("~/.ssh/id_rsa")  # Replace with the path to your SSH private key
+      private_key = tls_private_key.example_key.private_key_pem
       host        = aws_instance.example.public_ip
     }
   }
 }
-
 
 
