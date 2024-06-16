@@ -1,38 +1,59 @@
 pipeline {
     agent any
     
+    environment {
+        TF_WORKSPACE = '/var/lib/jenkins/workspace/oproj'
+        AWS_REGION = 'ap-south-1'
+        AWS_INSTANCE_TYPE = 't3.medium'
+    }
+    
     stages {
-        stage('Setup') {
+        stage('Checkout SCM') {
             steps {
-                // Checkout your Git repository where Terraform files are located
-                git url: 'https://github.com/vivekk2507/todo-demo-app', branch: 'main'
+                // Checkout the repository from GitHub
+                git branch: 'main', credentialsId: 'github-pat', url: 'https://github.com/vivekk2507/todo-demo-app'
             }
         }
-        stage('Terraform') {
+        
+        stage('Setup Terraform') {
             steps {
-                script {
-                    // Change to Terraform project directory
-                    dir('terraform-ec2') {
-                        // Initialize Terraform
-                        sh 'terraform init'
-                        
-                        // Plan Terraform deployment
-                        sh 'terraform plan'
-                        
-                        // Apply Terraform configuration (auto-approve to avoid user prompt)
-                        sh 'terraform apply -auto-approve'
-                        
-                        // Optionally, you can capture Terraform outputs
-                        sh 'terraform output'
-                    }
+                dir(TF_WORKSPACE + '/terraform-ec2') {
+                    // Initialize Terraform
+                    sh 'terraform init'
                 }
+            }
+        }
+        
+        stage('Terraform Plan') {
+            steps {
+                dir(TF_WORKSPACE + '/terraform-ec2') {
+                    // Run Terraform plan
+                    sh 'terraform plan -var="region=${AWS_REGION}" -var="instance_type=${AWS_INSTANCE_TYPE}" -out=tfplan'
+                }
+            }
+        }
+        
+        stage('Terraform Apply') {
+            steps {
+                dir(TF_WORKSPACE + '/terraform-ec2') {
+                    // Apply Terraform changes
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+        
+        stage('Deploy App') {
+            steps {
+                // Replace with your deployment steps if applicable
+                sh 'echo "Deploying application"'
+                // Example: Docker build and push, Kubernetes deployment, etc.
             }
         }
     }
     
     post {
         always {
-            // Clean up workspace after pipeline execution
+            // Clean up workspace
             cleanWs()
         }
     }
