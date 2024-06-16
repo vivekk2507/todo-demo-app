@@ -24,9 +24,11 @@ resource "aws_instance" "example" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("~/.ssh/id_rsa")
+      private_key = file("~/.ssh/id_rsa")  # Replace with the path to your SSH private key
       host        = aws_instance.example.public_ip
     }
   }
 }
+
+
 
