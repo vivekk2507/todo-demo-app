@@ -5,10 +5,9 @@ pipeline {
         AWS_REGION = 'ap-south-1'
         AWS_INSTANCE_TYPE = 't3.medium'
         JENKINS_IP = '43.204.143.128/32'  // Replace with your actual Jenkins IP address in CIDR notation
-        TF_WORKSPACE = '/var/lib/jenkins/workspace/oproj'  // Adjust this path as per your Jenkins workspace
         KEYPAIR_NAME = 'example-key'
         LOCAL_PPK_PATH = 'C:\\Users\\abina\\Downloads\\devops\\keys'  // Adjust this path on your local Windows machine
-        LOCAL_MACHINE_USERNAME = 'abinash kumar'  // Replace with your Windows username
+        LOCAL_MACHINE_USERNAME = 'abinash'  // Replace with your Windows username
         LOCAL_MACHINE_IP = '110.224.88.81'  // Replace with your Windows machine IP
     }
     
@@ -21,7 +20,7 @@ pipeline {
         
         stage('Setup Terraform') {
             steps {
-                dir(TF_WORKSPACE) {
+                dir('path_to_your_terraform_directory_in_repo') {  // Replace with the actual path to your Terraform files in the repo
                     withAWS(credentials: 'awsdemo') {
                         sh 'terraform init'
                     }
@@ -31,7 +30,7 @@ pipeline {
         
         stage('Terraform Plan') {
             steps {
-                dir(TF_WORKSPACE) {
+                dir('path_to_your_terraform_directory_in_repo') {  // Replace with the actual path to your Terraform files in the repo
                     withAWS(credentials: 'awsdemo') {
                         sh "terraform plan -var='region=${AWS_REGION}' -var='instance_type=${AWS_INSTANCE_TYPE}' -var='jenkins_ip=${JENKINS_IP}' -out=tfplan"
                     }
@@ -41,7 +40,7 @@ pipeline {
         
         stage('Terraform Apply') {
             steps {
-                dir(TF_WORKSPACE) {
+                dir('path_to_your_terraform_directory_in_repo') {  // Replace with the actual path to your Terraform files in the repo
                     withAWS(credentials: 'awsdemo') {
                         sh 'terraform apply -auto-approve tfplan'
                     }
@@ -68,7 +67,7 @@ pipeline {
         
         stage('Deploy App') {
             steps {
-                dir(TF_WORKSPACE) {
+                dir('path_to_your_terraform_directory_in_repo') {  // Replace with the actual path to your Terraform files in the repo
                     sh 'echo "Deploying application"'
                     // Add deployment steps if needed
                 }
