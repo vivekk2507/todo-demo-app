@@ -9,7 +9,6 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                // Checkout the repository from GitHub
                 git branch: 'main', credentialsId: 'github-pat', url: 'https://github.com/vivekk2507/todo-demo-app'
             }
         }
@@ -17,7 +16,6 @@ pipeline {
         stage('Setup Terraform') {
             steps {
                 dir('terraform-ec2') {
-                    // Initialize Terraform
                     sh 'terraform init'
                 }
             }
@@ -26,7 +24,6 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('terraform-ec2') {
-                    // Run Terraform plan
                     sh 'terraform plan -var="region=${AWS_REGION}" -var="instance_type=${AWS_INSTANCE_TYPE}" -out=tfplan'
                 }
             }
@@ -35,7 +32,6 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 dir('terraform-ec2') {
-                    // Apply Terraform changes
                     sh 'terraform apply -auto-approve tfplan'
                 }
             }
@@ -43,16 +39,14 @@ pipeline {
         
         stage('Deploy App') {
             steps {
-                // Replace with your deployment steps if applicable
                 sh 'echo "Deploying application"'
-                // Example: Docker build and push, Kubernetes deployment, etc.
+                // Add deployment steps if needed
             }
         }
     }
     
     post {
         always {
-            // Clean up workspace
             cleanWs()
         }
     }
