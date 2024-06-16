@@ -1,31 +1,39 @@
 pipeline {
     agent any
-
-    environment {
-        TF_VAR_aws_region = 'ap-south-1'
-    }
-
+    
     stages {
-        stage('Checkout SCM') {
+        stage('Setup') {
             steps {
-                git url: 'https://github.com/vivekk2507/todo-demo-app', branch: 'main'
+                // Checkout your Git repository where Terraform files are located
+                git 'https://github.com/your-repo/terraform-ec2.git'
             }
         }
-
-        stage('Setup Terraform') {
+        stage('Terraform') {
             steps {
                 script {
-                    sh 'terraform init'
-                    sh 'terraform apply -auto-approve'
+                    // Change to Terraform project directory
+                    dir('terraform-ec2') {
+                        // Initialize Terraform
+                        sh 'terraform init'
+                        
+                        // Plan Terraform deployment
+                        sh 'terraform plan'
+                        
+                        // Apply Terraform configuration (auto-approve to avoid user prompt)
+                        sh 'terraform apply -auto-approve'
+                        
+                        // Optionally, you can capture Terraform outputs
+                        sh 'terraform output'
+                    }
                 }
             }
         }
     }
-
+    
     post {
         always {
+            // Clean up workspace after pipeline execution
             cleanWs()
         }
     }
 }
-
