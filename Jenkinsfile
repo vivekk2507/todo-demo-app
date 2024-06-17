@@ -14,7 +14,7 @@ pipeline {
                 script {
                 
                     // Generate SSH key pair
-                    sh 'ssh-keygen -t rsa -b 4096 -C "your_email@example.com" -f my-key -N ""'
+                    sh 'ssh-keygen -t rsa -b 2048 -f my-key'
                 }
             }
         }
