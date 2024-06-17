@@ -9,7 +9,7 @@ pipeline {
                 script {
                 
                     // Generate SSH key pair
-                    sh 'ssh-keygen -t rsa -b 2048 -f my-key'
+                    sh 'ssh-keygen -t rsa -b 2048 -f my-key -y'
                 }
             }
         }
