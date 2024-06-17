@@ -20,9 +20,9 @@ pipeline {
         
         stage('Setup Terraform') {
             steps {
-                dir('') {  // Adjust directory path as per your Jenkins workspace structure
+                dir('') {
                     withAWS(credentials: 'awsdemo') {
-                        sh 'terraform init'  // Terraform initialization command
+                        sh 'terraform init'
                     }
                 }
             }
@@ -30,7 +30,7 @@ pipeline {
         
         stage('Terraform Plan') {
             steps {
-                dir('') {  // Adjust directory path as per your Jenkins workspace structure
+                dir('') {
                     withAWS(credentials: 'awsdemo') {
                         sh "terraform plan -var='region=${AWS_REGION}' -var='instance_type=${AWS_INSTANCE_TYPE}' -var='jenkins_ip=${JENKINS_IP}' -out=tfplan"
                     }
@@ -40,7 +40,7 @@ pipeline {
         
         stage('Terraform Apply') {
             steps {
-                dir('') {  // Adjust directory path as per your Jenkins workspace structure
+                dir('') {
                     withAWS(credentials: 'awsdemo') {
                         sh 'terraform apply -auto-approve tfplan'
                     }
@@ -52,11 +52,18 @@ pipeline {
             steps {
                 script {
                     withAWS(credentials: 'awsdemo') {
-                        // Create and save the key pair locally on Jenkins server
-                        sh "aws ec2 create-key-pair --key-name ${KEYPAIR_NAME} --query 'KeyMaterial' --output text > ${KEYPAIR_NAME}.pem"
-                        sh "chmod 400 ${KEYPAIR_NAME}.pem"
-                        sh "ssh-keygen -y -f ${KEYPAIR_NAME}.pem > ${KEYPAIR_NAME}.pub"
-                        sh "puttygen ${KEYPAIR_NAME}.pem -o ${KEYPAIR_NAME}.ppk"
+                        // Check if key pair exists before attempting to create it
+                        def keyExists = sh(script: "aws ec2 describe-key-pairs --key-names ${KEYPAIR_NAME}", returnStatus: true)
+                        
+                        if (keyExists == 0) {
+                            echo "Key pair '${KEYPAIR_NAME}' already exists. Skipping creation."
+                        } else {
+                            // Create the key pair
+                            sh "aws ec2 create-key-pair --key-name ${KEYPAIR_NAME} --query 'KeyMaterial' --output text > ${KEYPAIR_NAME}.pem"
+                            sh "chmod 400 ${KEYPAIR_NAME}.pem"
+                            sh "ssh-keygen -y -f ${KEYPAIR_NAME}.pem > ${KEYPAIR_NAME}.pub"
+                            sh "puttygen ${KEYPAIR_NAME}.pem -o ${KEYPAIR_NAME}.ppk"
+                        }
                         
                         // Copy the .ppk file to the local Windows machine using SCP
                         bat "scp -o StrictHostKeyChecking=no ${KEYPAIR_NAME}.ppk ${LOCAL_MACHINE_USERNAME}@${LOCAL_MACHINE_IP}:${LOCAL_PPK_PATH}\\${KEYPAIR_NAME}.ppk"
@@ -67,7 +74,7 @@ pipeline {
         
         stage('Deploy App') {
             steps {
-                sh 'echo "Deploying application"'
+                echo "Deploying application"
                 // Add deployment steps if needed
             }
         }
@@ -79,4 +86,3 @@ pipeline {
         }
     }
 }
-
