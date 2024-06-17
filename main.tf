@@ -23,7 +23,7 @@ variable "jenkins_ip" {
 variable "keypair_name" {
   description = "Name of the AWS key pair"
   type        = string
-  default     = "public_key = file("${path.module}/my-key.pub")"  # Replace with the actual key pair name
+  default     = "my-key.pub"  # Replace with the actual key pair name
 }
 
 data "aws_key_pair" "existing_key" {
@@ -31,15 +31,15 @@ data "aws_key_pair" "existing_key" {
 }
 
 resource "tls_private_key" "checkt" {
-  count = length(data.aws_key_pair.existing_key) == 0 ? 1 : 0
+  count     = length(data.aws_key_pair.existing_key) == 0 ? 1 : 0
   algorithm = "RSA"
-  rsa_bits = 4096
+  rsa_bits  = 4096
 }
 
 resource "aws_key_pair" "checkt" {
-  count     = length(data.aws_key_pair.existing_key) == 0 ? 1 : 0
-  key_name  = var.keypair_name
-  public_key = tls_private_key.checkt[count.index].public_key_openssh
+  count       = length(data.aws_key_pair.existing_key) == 0 ? 1 : 0
+  key_name    = var.keypair_name
+  public_key  = tls_private_key.checkt[count.index].public_key_openssh
 }
 
 resource "aws_security_group" "instance_sg" {
@@ -90,3 +90,4 @@ resource "aws_instance" "example" {
     }
   }
 }
+
