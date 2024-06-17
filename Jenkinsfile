@@ -1,25 +1,33 @@
 pipeline {
     agent any
-   
+    
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+        SONARQUBE_ENV = 'SonarQube'
+        GITHUB_CREDENTIALS = 'github-pat'
+        GITHUB_REPO = 'https://github.com/vivekk2507/todo-demo-app'
+        DOCKER_IMAGE = 'my-docker-image:latest'
+        POSTGRESQL_IMAGE = 'postgresql-image:latest'
+    }
+    
     stages {
         stage('Generate SSH Key Pair') {
             steps {
                 script {
-                    sh 'ssh-keygen -t rsa -b 2048 -f my-key -y'
+                    sh 'ssh-keygen -t rsa -b 2048 -f my-key -N ""'
                 }
             }
         }
         
         stage('Checkout SCM') {
             steps {
-                git branch: 'main', credentialsId: 'github-pat', url: 'https://github.com/vivekk2507/todo-demo-app'
+                git branch: 'main', credentialsId: GITHUB_CREDENTIALS, url: GITHUB_REPO
             }
         }
         
         stage('Build with Maven') {
             steps {
                 script {
-                    // Running Maven clean package without tests
                     sh 'mvn clean package -DskipTests'
                 }
             }
@@ -27,7 +35,7 @@ pipeline {
         
         stage('Code Quality Check with SonarQube') {
             steps {
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv(SONARQUBE_ENV) {
                     sh 'mvn sonar:sonar'
                 }
             }
@@ -35,22 +43,23 @@ pipeline {
         
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t my-docker-image:latest .'
+                sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
         
         stage('Create Container Image for PostgreSQL') {
             steps {
-                sh 'docker build -t postgresql-image:latest -f path/to/postgresql/Dockerfile .'
+                sh "docker build -t ${POSTGRESQL_IMAGE} -f path/to/postgresql/Dockerfile ."
             }
         }
         
         stage('Push Docker Images to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-                    sh 'docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD'
-                    sh 'docker push my-docker-image:latest'
-                    sh 'docker push postgresql-image:latest'
+                script {
+                    docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
+                        sh "docker push ${DOCKER_IMAGE}"
+                        sh "docker push ${POSTGRESQL_IMAGE}"
+                    }
                 }
             }
         }
@@ -66,7 +75,9 @@ pipeline {
         
         stage('Deploy App using Terraform') {
             steps {
-                sh 'terraform apply -auto-approve'
+                dir('terraform') {
+                    sh 'terraform apply -auto-approve'
+                }
             }
         }
         
@@ -78,8 +89,13 @@ pipeline {
         
         stage('Apply Prometheus and Grafana using Terraform or Helm') {
             steps {
-                sh 'helm install prometheus stable/prometheus --namespace monitoring'
-                sh 'helm install grafana stable/grafana --namespace monitoring'
+                script {
+                    sh 'helm repo add prometheus-community https://prometheus-community.github.io/helm-charts'
+                    sh 'helm repo add grafana https://grafana.github.io/helm-charts'
+                    sh 'helm repo update'
+                    sh 'helm install prometheus prometheus-community/prometheus --namespace monitoring'
+                    sh 'helm install grafana grafana/grafana --namespace monitoring'
+                }
             }
         }
         
