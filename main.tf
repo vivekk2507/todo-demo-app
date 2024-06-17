@@ -85,7 +85,7 @@ resource "aws_instance" "example" {
     connection {
       type        = "ssh"
       user        = "ubuntu"  # Replace with appropriate user for your AMI
-      private_key = tls_private_key.example_key.private_key_pem
+      private_key = tls_private_key.checkt.private_key_pem
       host        = aws_instance.example.public_ip
     }
   }
