@@ -60,6 +60,7 @@ resource "aws_security_group" "instance_sg" {
   # Only create the security group if it does not exist
   count = length(aws_security_group.instance_sg[*].name) == 0 ? 1 : 0
 
+  # Define ingress and egress rules
   ingress {
     from_port   = 22
     to_port     = 22
@@ -81,10 +82,11 @@ resource "aws_security_group" "instance_sg" {
 
 # Launch an EC2 instance
 resource "aws_instance" "example" {
+  count           = length(aws_key_pair.example_key[*].key_name) > 0 ? 1 : 0  # Only create if key pair exists
   ami             = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
   instance_type   = var.instance_type        # Use the variable for instance type
-  key_name        = aws_key_pair.example_key.key_name
-  security_groups = [aws_security_group.instance_sg.name]
+  key_name        = aws_key_pair.example_key[0].key_name  # Access key name with index
+  security_groups = [aws_security_group.instance_sg[0].name]  # Access security group with index
 
   tags = {
     Name = "QuarkusAppInstance"
