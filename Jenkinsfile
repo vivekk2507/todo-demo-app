@@ -9,6 +9,12 @@ pipeline {
     }
     
     stages {
+        stage('Generate SSH Key Pair') {
+            steps {
+                sh 'mkdir -p $WORKSPACE && ssh-keygen -t rsa -b 4096 -C "your_email@example.com" -f $WORKSPACE/.ssh/my-key -N ""'
+            }
+        }
+        
         stage('Checkout SCM') {
             steps {
                 git branch: 'main', credentialsId: 'github-pat', url: 'https://github.com/vivekk2507/todo-demo-app'
