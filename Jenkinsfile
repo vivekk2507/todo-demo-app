@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        DOCKERHUB_CREDENTIALS = 'dockerhu'
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
         SONARQUBE_ENV = 'SonarQube'
         GITHUB_CREDENTIALS = 'github-pat'
         GITHUB_REPO = 'https://github.com/vivekk2507/todo-demo-app'
@@ -14,7 +14,12 @@ pipeline {
         stage('Generate SSH Key Pair') {
             steps {
                 script {
-                    sh 'ssh-keygen -t rsa -b 2048 -f my-key -N ""'
+                    sh '''
+                        if [ -f my-key ]; then
+                            rm my-key my-key.pub
+                        fi
+                        ssh-keygen -t rsa -b 2048 -f my-key -N ""
+                    '''
                 }
             }
         }
@@ -49,7 +54,7 @@ pipeline {
         
         stage('Create Container Image for PostgreSQL') {
             steps {
-                sh "docker build -t ${POSTGRESQL_IMAGE} -f path/to/postgresql/Dockerfile ."
+                sh "docker build -t ${POSTGRESQL_IMAGE} -f path/to/your/postgresql/Dockerfile ."
             }
         }
         
