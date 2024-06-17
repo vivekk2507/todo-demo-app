@@ -60,11 +60,14 @@ resource "aws_instance" "example" {
     connection {
       type        = "ssh"
       user        = "ubuntu"  # Replace with appropriate user for your AMI
-      private_key = tls_private_key.checkt.private_key_pem
+      private_key = file("${path.module}/checkt.pem")
       host        = aws_instance.example.public_ip
     }
   }
 }
 
+output "private_key_path" {
+  value = local_file.private_key_pem.filename
+}
 
 
