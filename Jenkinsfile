@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+        DOCKERHUB_CREDENTIALS = 'dockerhu'
         SONARQUBE_ENV = 'SonarQube'
         GITHUB_CREDENTIALS = 'github-pat'
         GITHUB_REPO = 'https://github.com/vivekk2507/todo-demo-app'
