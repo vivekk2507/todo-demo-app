@@ -39,7 +39,7 @@ pipeline {
             steps {
                 dir('') {
                     withAWS(credentials: 'awsdemo') {
-                        sh "terraform plan -var='region=${AWS_REGION}' -var='instance_type=${AWS_INSTANCE_TYPE}' -var='jenkins_ip=${JENKINS_IP}' -var='keypair_name=${KEYPAIR_NAME}' -out=tfplan"
+                        sh "terraform plan -out=tfplan"
                     }
                 }
             }
