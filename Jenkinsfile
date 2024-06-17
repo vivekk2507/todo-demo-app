@@ -20,24 +20,30 @@ pipeline {
         
         stage('Setup Terraform') {
             steps {
-                withAWS(credentials: 'awsdemo') {
-                    sh 'terraform init /var/lib/jenkins/workspace/oproj'  // Adjust path if necessary
+                dir('') {  // Adjust directory path as per your Jenkins workspace structure
+                    withAWS(credentials: 'awsdemo') {
+                        sh 'terraform init'  // Terraform initialization command
+                    }
                 }
             }
         }
         
         stage('Terraform Plan') {
             steps {
-                withAWS(credentials: 'awsdemo') {
-                    sh "terraform plan -var='region=${AWS_REGION}' -var='instance_type=${AWS_INSTANCE_TYPE}' -var='jenkins_ip=${JENKINS_IP}' -out=tfplan /var/lib/jenkins/workspace/oproj"  // Adjust path if necessary
+                dir('') {  // Adjust directory path as per your Jenkins workspace structure
+                    withAWS(credentials: 'awsdemo') {
+                        sh "terraform plan -var='region=${AWS_REGION}' -var='instance_type=${AWS_INSTANCE_TYPE}' -var='jenkins_ip=${JENKINS_IP}' -out=tfplan"
+                    }
                 }
             }
         }
         
         stage('Terraform Apply') {
             steps {
-                withAWS(credentials: 'awsdemo') {
-                    sh 'terraform apply -auto-approve tfplan /var/lib/jenkins/workspace/oproj'  // Adjust path if necessary
+                dir('') {  // Adjust directory path as per your Jenkins workspace structure
+                    withAWS(credentials: 'awsdemo') {
+                        sh 'terraform apply -auto-approve tfplan'
+                    }
                 }
             }
         }
@@ -73,5 +79,4 @@ pipeline {
         }
     }
 }
-
 
