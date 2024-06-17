@@ -50,7 +50,7 @@ pipeline {
             steps {
 
                 
-                sh "docker build -t ${DOCKER_IMAGE} /var/lib/jenkins/workspace/oproj/src/main/docker/Dockerfile.jvm."
+                sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
         
