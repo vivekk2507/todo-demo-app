@@ -23,7 +23,7 @@ variable "jenkins_ip" {
 variable "keypair_name" {
   description = "Name of the AWS key pair"
   type        = string
-  default     = "checkt"  # Replace with the actual key pair name
+  default     = "public_key = file("${path.module}/my-key.pub")"  # Replace with the actual key pair name
 }
 
 data "aws_key_pair" "existing_key" {
