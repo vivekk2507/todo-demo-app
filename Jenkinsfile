@@ -1,8 +1,6 @@
 pipeline {
     agent any
-     environment {
-        PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin:/opt/maven/apache-maven-3.9.7/bin:$PATH"
-    }
+   
     stages {
         stage('Generate SSH Key Pair') {
             steps {
@@ -18,7 +16,7 @@ pipeline {
             }
         }
         
-       stage('Build with Maven') {
+        stage('Build with Maven') {
             steps {
                 script {
                     // Running Maven clean package without tests
@@ -35,17 +33,9 @@ pipeline {
             }
         }
         
-        stage('Push Artifact to Nexus') {
+        stage('Build Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'nexus-creds', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
-                    sh 'mvn deploy -DrepositoryId=nexus -Durl=http://nexus.example.com/repository/maven-releases -Dmaven.test.skip=true'
-                }
-            }
-        }
-        
-        stage('Build Docker Image from Nexus') {
-            steps {
-                sh 'docker build -t my-docker-image:nexus http://nexus.example.com/repository/docker-images/my-docker-image:latest'
+                sh 'docker build -t my-docker-image:latest .'
             }
         }
         
@@ -59,7 +49,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
                     sh 'docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD'
-                    sh 'docker push my-docker-image:nexus'
+                    sh 'docker push my-docker-image:latest'
                     sh 'docker push postgresql-image:latest'
                 }
             }
