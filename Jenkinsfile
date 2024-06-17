@@ -58,10 +58,5 @@ pipeline {
         }
     }
     
-    post {
-        always {
-            // Clean up Jenkins workspace
-            // cleanWs()
-        }
-    }
-}
+   
+
