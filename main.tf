@@ -29,6 +29,11 @@ resource "aws_key_pair" "example_key" {
   }
 }
 
+resource "tls_private_key" "example_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
 resource "aws_security_group" "instance_sg" {
   name        = "instance-sg"
   description = "Security group for EC2 instance allowing SSH from Jenkins"
@@ -59,8 +64,8 @@ resource "aws_security_group" "instance_sg" {
 resource "aws_instance" "example" {
   ami             = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
   instance_type   = var.instance_type
-  key_name        = aws_key_pair.example_key[0].key_name
-  security_groups = [aws_security_group.instance_sg[0].name]
+  key_name        = aws_key_pair.example_key.key_name
+  security_groups = [aws_security_group.instance_sg.name]
 
   lifecycle {
     ignore_changes = [tags]
@@ -81,8 +86,9 @@ resource "aws_instance" "example" {
       type        = "ssh"
       user        = "ubuntu"  # Replace with appropriate user for your AMI
       private_key = tls_private_key.example_key.private_key_pem
-      host        = aws_instance.example[0].public_ip  # Access public_ip with index
+      host        = aws_instance.example.public_ip
     }
   }
 }
+
 
