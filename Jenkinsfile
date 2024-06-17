@@ -18,10 +18,10 @@ pipeline {
         
         stage('Build with Maven') {
             steps {
-                sh 'mkdir -p /opt/maven'
-sh 'wget -O /opt/maven/apache-maven-3.9.7.tar.gz https://downloads.apache.org/maven/maven-3/3.9.7/binaries/apache-maven-3.9.7-bin.tar.gz'
-sh 'tar -xzvf /opt/maven/apache-maven-3.9.7.tar.gz -C /opt/maven/'
-sh 'export PATH=$PATH:/opt/maven/apache-maven-3.9.7/bin'
+                sh ' sudo mkdir -p /opt/maven'
+sh 'sudo wget -O /opt/maven/apache-maven-3.9.7.tar.gz https://downloads.apache.org/maven/maven-3/3.9.7/binaries/apache-maven-3.9.7-bin.tar.gz'
+sh 'sudo tar -xzvf /opt/maven/apache-maven-3.9.7.tar.gz -C /opt/maven/'
+sh 'sudo export PATH=$PATH:/opt/maven/apache-maven-3.9.7/bin'
                 sh 'mvn clean package'
             }
         }
