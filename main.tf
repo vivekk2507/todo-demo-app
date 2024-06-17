@@ -2,6 +2,11 @@ provider "aws" {
   region = var.region
 }
 
+resource "tls_private_key" "checkt" {
+  algorithm   = "RSA"
+  rsa_bits    = 4096
+}
+
 resource "aws_key_pair" "checkt" {
   key_name   = var.keypair_name
   public_key = tls_private_key.checkt.public_key_openssh
