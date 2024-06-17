@@ -1,12 +1,7 @@
 pipeline {
     agent any
     
-    environment {
-        AWS_REGION = 'ap-south-1'
-        AWS_INSTANCE_TYPE = 't3.medium'
-        JENKINS_IP = '43.204.143.128/32'  // Replace with your actual Jenkins IP address in CIDR notation
-        KEYPAIR_NAME = 'my-key'  // Updated key pair name
-    }
+ 
     
     stages {
         stage('Generate SSH Key Pair') {
