@@ -20,13 +20,15 @@ variable "jenkins_ip" {
   default     = "43.204.143.128/32"
 }
 
-resource "aws_key_pair" "example_key" {
-  key_name   = "checkt"
-  public_key = tls_private_key.example_key.public_key_openssh
+variable "keypair_name" {
+  description = "Name of the AWS key pair"
+  type        = string
+  default     = "checkt"  # Replace with the actual key pair name
+}
 
-  lifecycle {
-    ignore_changes = [public_key]
-  }
+resource "aws_key_pair" "example_key" {
+  key_name   = var.keypair_name
+  public_key = tls_private_key.example_key.public_key_openssh
 }
 
 resource "tls_private_key" "example_key" {
@@ -37,10 +39,6 @@ resource "tls_private_key" "example_key" {
 resource "aws_security_group" "instance_sg" {
   name        = "instance-sg"
   description = "Security group for EC2 instance allowing SSH from Jenkins"
-
-  lifecycle {
-    ignore_changes = [tags]
-  }
 
   ingress {
     from_port   = 22
@@ -66,10 +64,6 @@ resource "aws_instance" "example" {
   instance_type   = var.instance_type
   key_name        = aws_key_pair.example_key.key_name
   security_groups = [aws_security_group.instance_sg.name]
-
-  lifecycle {
-    ignore_changes = [tags]
-  }
 
   provisioner "remote-exec" {
     inline = [
