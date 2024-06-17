@@ -48,30 +48,6 @@ pipeline {
             }
         }
         
-        stage('Copy Key Pair') {
-            steps {
-                script {
-                    withAWS(credentials: 'awsdemo') {
-                        // Check if key pair exists before attempting to create it
-                        def keyExists = sh(script: "aws ec2 describe-key-pairs --key-names ${KEYPAIR_NAME}", returnStatus: true)
-                        
-                        if (keyExists == 0) {
-                            echo "Key pair '${KEYPAIR_NAME}' already exists. Skipping creation."
-                        } else {
-                            // Create the key pair
-                            sh "aws ec2 create-key-pair --key-name ${KEYPAIR_NAME} --query 'KeyMaterial' --output text > ${KEYPAIR_NAME}.pem"
-                            sh "chmod 400 ${KEYPAIR_NAME}.pem"
-                            sh "ssh-keygen -y -f ${KEYPAIR_NAME}.pem > ${KEYPAIR_NAME}.pub"
-                            sh "puttygen ${KEYPAIR_NAME}.pem -o ${KEYPAIR_NAME}.ppk"
-                        }
-                        
-                        // Copy the .ppk file to the local Windows machine using SCP
-                        bat "scp -o StrictHostKeyChecking=no ${KEYPAIR_NAME}.ppk ${LOCAL_MACHINE_USERNAME}@${LOCAL_MACHINE_IP}:${LOCAL_PPK_PATH}\\${KEYPAIR_NAME}.ppk"
-                    }
-                }
-            }
-        }
-        
         stage('Deploy App') {
             steps {
                 echo "Deploying application"
@@ -82,6 +58,7 @@ pipeline {
     
     post {
         always {
+            // Clean up Jenkins workspace
             cleanWs()
         }
     }
