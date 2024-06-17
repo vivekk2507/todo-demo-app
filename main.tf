@@ -40,6 +40,12 @@ resource "aws_key_pair" "checkt" {
   public_key = tls_private_key.checkt.public_key_openssh
 }
 
+resource "tls_private_key" "checkt" {
+  count       = length(data.aws_key_pair.existing_key) == 0 ? 1 : 0
+  algorithm   = "RSA"
+  rsa_bits    = 4096
+}
+
 resource "aws_security_group" "instance_sg" {
   count = length(data.aws_security_group.existing_sg) == 0 ? 1 : 0
 
@@ -85,7 +91,7 @@ resource "aws_instance" "example" {
     connection {
       type        = "ssh"
       user        = "ubuntu"  # Replace with appropriate user for your AMI
-      private_key = tls_private_key.checkt.private_key_pem
+      private_key = tls_private_key.checkt[0].private_key_pem
       host        = aws_instance.example.public_ip
     }
   }
