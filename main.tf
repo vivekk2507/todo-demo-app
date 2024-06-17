@@ -23,7 +23,7 @@ variable "jenkins_ip" {
 variable "keypair_name" {
   description = "Name of the AWS key pair"
   type        = string
-  default     = "/var/lib/jenkins/workspace/my-key.pub"  # Path to the key pair file in Jenkins workspace
+  default     = "my-key.pub"  # Path to the key pair file in Jenkins workspace
 }
 
 resource "aws_security_group" "instance_sg" {
