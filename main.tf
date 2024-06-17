@@ -26,17 +26,23 @@ variable "keypair_name" {
   default     = "checkt"  # Replace with the actual key pair name
 }
 
+data "aws_key_pair" "existing_key" {
+  key_name = var.keypair_name
+}
+
+data "aws_security_group" "existing_sg" {
+  name = "instance-sg"
+}
+
 resource "aws_key_pair" "example_key" {
-  key_name   = var.keypair_name
+  count     = length(data.aws_key_pair.existing_key) == 0 ? 1 : 0
+  key_name  = var.keypair_name
   public_key = tls_private_key.example_key.public_key_openssh
 }
 
-resource "tls_private_key" "example_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
 resource "aws_security_group" "instance_sg" {
+  count = length(data.aws_security_group.existing_sg) == 0 ? 1 : 0
+
   name        = "instance-sg"
   description = "Security group for EC2 instance allowing SSH from Jenkins"
 
@@ -62,8 +68,8 @@ resource "aws_security_group" "instance_sg" {
 resource "aws_instance" "example" {
   ami             = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
   instance_type   = var.instance_type
-  key_name        = aws_key_pair.example_key.key_name
-  security_groups = [aws_security_group.instance_sg.name]
+  key_name        = length(data.aws_key_pair.existing_key) == 0 ? aws_key_pair.example_key[0].key_name : var.keypair_name
+  security_groups = length(data.aws_security_group.existing_sg) == 0 ? [aws_security_group.instance_sg[0].name] : [data.aws_security_group.existing_sg[0].name]
 
   provisioner "remote-exec" {
     inline = [
@@ -84,4 +90,3 @@ resource "aws_instance" "example" {
     }
   }
 }
-
