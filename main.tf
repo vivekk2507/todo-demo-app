@@ -33,16 +33,32 @@ resource "local_file" "public_key" {
   content  = tls_private_key.example_key.public_key_openssh
 }
 
-# Create an AWS key pair using the generated SSH key
+# Create an AWS key pair using the generated SSH key, if it does not exist
 resource "aws_key_pair" "example_key" {
   key_name   = "example-key"
   public_key = tls_private_key.example_key.public_key_openssh
+
+  # Condition to create the key pair only if it does not already exist
+  lifecycle {
+    ignore_changes = [public_key]
+  }
+
+  # Only create the key pair if it does not exist
+  count = length(aws_key_pair.example_key[*].key_name) == 0 ? 1 : 0
 }
 
-# Create a security group allowing SSH access from Jenkins IP
+# Create a security group allowing SSH access from Jenkins IP, if it does not exist
 resource "aws_security_group" "instance_sg" {
   name        = "instance-sg"
   description = "Security group for EC2 instance allowing SSH from Jenkins"
+
+  # Condition to create the security group only if it does not already exist
+  lifecycle {
+    ignore_changes = [tags]
+  }
+
+  # Only create the security group if it does not exist
+  count = length(aws_security_group.instance_sg[*].name) == 0 ? 1 : 0
 
   ingress {
     from_port   = 22
