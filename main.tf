@@ -68,7 +68,7 @@ resource "aws_security_group" "instance_sg" {
 resource "aws_instance" "example" {
   ami             = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
   instance_type   = var.instance_type
-  key_name        = length(data.aws_key_pair.existing_key) == 0 ? aws_key_pair.example_key[0].key_name : var.keypair_name
+  key_name        = length(data.aws_key_pair.existing_key) == 0 ? aws_key_pair.checkt[0].key_name : var.keypair_name
   security_groups = length(data.aws_security_group.existing_sg) == 0 ? [aws_security_group.instance_sg[0].name] : [data.aws_security_group.existing_sg[0].name]
 
   provisioner "remote-exec" {
