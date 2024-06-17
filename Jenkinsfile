@@ -20,30 +20,24 @@ pipeline {
         
         stage('Setup Terraform') {
             steps {
-                dir('path_to_your_terraform_directory_in_repo') {  // Replace with the actual path to your Terraform files in the repo
-                    withAWS(credentials: 'awsdemo') {
-                        sh 'terraform init'
-                    }
+                withAWS(credentials: 'awsdemo') {
+                    sh 'terraform init /var/lib/jenkins/workspace/oproj'  // Adjust path if necessary
                 }
             }
         }
         
         stage('Terraform Plan') {
             steps {
-                dir('path_to_your_terraform_directory_in_repo') {  // Replace with the actual path to your Terraform files in the repo
-                    withAWS(credentials: 'awsdemo') {
-                        sh "terraform plan -var='region=${AWS_REGION}' -var='instance_type=${AWS_INSTANCE_TYPE}' -var='jenkins_ip=${JENKINS_IP}' -out=tfplan"
-                    }
+                withAWS(credentials: 'awsdemo') {
+                    sh "terraform plan -var='region=${AWS_REGION}' -var='instance_type=${AWS_INSTANCE_TYPE}' -var='jenkins_ip=${JENKINS_IP}' -out=tfplan /var/lib/jenkins/workspace/oproj"  // Adjust path if necessary
                 }
             }
         }
         
         stage('Terraform Apply') {
             steps {
-                dir('path_to_your_terraform_directory_in_repo') {  // Replace with the actual path to your Terraform files in the repo
-                    withAWS(credentials: 'awsdemo') {
-                        sh 'terraform apply -auto-approve tfplan'
-                    }
+                withAWS(credentials: 'awsdemo') {
+                    sh 'terraform apply -auto-approve tfplan /var/lib/jenkins/workspace/oproj'  // Adjust path if necessary
                 }
             }
         }
@@ -67,10 +61,8 @@ pipeline {
         
         stage('Deploy App') {
             steps {
-                dir('path_to_your_terraform_directory_in_repo') {  // Replace with the actual path to your Terraform files in the repo
-                    sh 'echo "Deploying application"'
-                    // Add deployment steps if needed
-                }
+                sh 'echo "Deploying application"'
+                // Add deployment steps if needed
             }
         }
     }
