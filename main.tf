@@ -1,4 +1,4 @@
-provider "aws" {
+pprovider "aws" {
   region = var.region
 }
 
@@ -89,4 +89,5 @@ resource "aws_instance" "example" {
       host        = aws_instance.example.public_ip
     }
   }
+}
 }
