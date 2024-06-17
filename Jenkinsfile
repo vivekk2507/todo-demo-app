@@ -9,10 +9,7 @@ pipeline {
         DOCKER_IMAGE = 'my-docker-image:latest'
         POSTGRESQL_IMAGE = 'postgresql-image:latest'
     }
-     tools {
-        docker 'latest'
-        jdk 'your_jdk_version'
-    }
+    
     stages {
         stage('Generate SSH Key Pair') {
             steps {
