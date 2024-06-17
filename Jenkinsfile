@@ -33,13 +33,15 @@ pipeline {
         
         stage('Push Artifact to Nexus') {
             steps {
-                // Add the necessary steps to push the artifact to Nexus
+                // Assuming Nexus credentials are configured
+                withCredentials([usernamePassword(credentialsId: 'nexus-creds', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+                    sh 'mvn deploy -DrepositoryId=nexus -Durl=http://nexus.example.com/repository/maven-releases -Dmaven.test.skip=true'
+                }
             }
         }
         
         stage('Build Docker Image from Nexus') {
             steps {
-                // Modify Dockerfile.jvm to copy and build from Nexus
                 // Assuming Docker is installed and configured
                 sh 'docker build -t my-docker-image:nexus .'
             }
@@ -47,16 +49,20 @@ pipeline {
         
         stage('Create Container Image for PostgreSQL') {
             steps {
-                // Add steps to build the PostgreSQL container image
-                // based on the instructions in the README.md file
+                // Assuming Docker is installed and configured
+                // Using the instructions from the README.md file to build PostgreSQL container image
+                sh 'docker build -t postgresql-image:latest -f path/to/postgresql/Dockerfile .'
             }
         }
         
         stage('Push Docker Images to Docker Hub') {
             steps {
-                // Push the built Docker images to Docker Hub
-                sh 'docker push my-docker-image:nexus'
-                // Push PostgreSQL image as well
+                // Assuming Docker Hub credentials are configured
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                    sh 'docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD'
+                    sh 'docker push my-docker-image:nexus'
+                    sh 'docker push postgresql-image:latest'
+                }
             }
         }
         
@@ -73,24 +79,29 @@ pipeline {
         stage('Deploy App using Terraform') {
             steps {
                 // Assuming Terraform deployment steps are defined
+                // Example: sh 'terraform apply -auto-approve'
             }
         }
         
         stage('Apply Orchestration using Kubernetes') {
             steps {
                 // Assuming Kubernetes resources are defined and Terraform is configured to apply them
+                // Example: sh 'kubectl apply -f path/to/kubernetes/resources'
             }
         }
         
         stage('Apply Prometheus and Grafana using Terraform or Helm') {
             steps {
                 // Assuming Prometheus and Grafana configurations are defined either using Terraform or Helm
+                // Example: sh 'helm install prometheus stable/prometheus --namespace monitoring'
+                // Example: sh 'helm install grafana stable/grafana --namespace monitoring'
             }
         }
         
         stage('Create Alerts using Prometheus') {
             steps {
                 // Assuming Prometheus alert rules are defined
+                // Example: sh 'kubectl apply -f path/to/prometheus/alerts'
             }
         }
     }
