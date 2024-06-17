@@ -1,9 +1,6 @@
 pipeline {
     agent any
-     environment {
-        PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin:/opt/maven/apache-maven-3.9.7/bin:$PATH"
-    }
-    
+     
     stages {
         stage('Generate SSH Key Pair') {
             steps {
@@ -24,7 +21,7 @@ pipeline {
                 sh ' sudo mkdir -p /opt/maven'
 sh 'sudo wget -O /opt/maven/apache-maven-3.9.7.tar.gz https://downloads.apache.org/maven/maven-3/3.9.7/binaries/apache-maven-3.9.7-bin.tar.gz'
 sh 'sudo tar -xzvf /opt/maven/apache-maven-3.9.7.tar.gz -C /opt/maven/'
-sh 'sudo export PATH=$PATH:/opt/maven/apache-maven-3.9.7/bin'
+sh 'export PATH=$PATH:/opt/maven/apache-maven-3.9.7/bin'
                 sh 'mvn clean package'
             }
         }
