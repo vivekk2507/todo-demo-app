@@ -48,6 +48,16 @@ pipeline {
         
         stage('Build Docker Image') {
             steps {
+sh "apt-get update -qq && \"
+    sh "apt-get install -qqy apt-transport-https ca-certificates curl gnupg2 software-properties-common && \"
+    sh "curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \"
+    sh "apt-key fingerprint 0EBFCD88 && \"
+    sh "add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" && \"
+    sh "apt-get update -qq && \"
+    sh "apt-get install -qqy docker-ce && \"
+    ush "sermod -aG docker jenkins && \"
+    sh "chown -R jenkins:jenkins $JENKINS_HOME/"
+                
                 sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
