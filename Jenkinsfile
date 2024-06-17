@@ -1,5 +1,8 @@
 pipeline {
     agent any
+     environment {
+        PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin:/opt/maven/apache-maven-3.9.7/bin:$PATH"
+    }
     
     stages {
         stage('Generate SSH Key Pair') {
