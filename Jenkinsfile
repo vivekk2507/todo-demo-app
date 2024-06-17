@@ -5,7 +5,7 @@ pipeline {
         AWS_REGION = 'ap-south-1'
         AWS_INSTANCE_TYPE = 't3.medium'
         JENKINS_IP = '43.204.143.128/32'  // Replace with your actual Jenkins IP address in CIDR notation
-        KEYPAIR_NAME = '/var/lib/jenkins/workspace/oproj/my-key'  // Updated key pair name
+        KEYPAIR_NAME = 'my-key'  // Updated key pair name
     }
     
     stages {
