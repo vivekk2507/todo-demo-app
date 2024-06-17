@@ -7,12 +7,12 @@ variable "region" {
   type        = string
   default     = "ap-south-1"
 }
-
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
   default     = "t3.medium"
 }
+
 
 variable "jenkins_ip" {
   description = "Jenkins' IP address for SSH access in CIDR notation (e.g., x.x.x.x/32)"
@@ -20,40 +20,11 @@ variable "jenkins_ip" {
   default     = "43.204.143.128/32"
 }
 
-variable "keypair_name" {
-  description = "Name of the AWS key pair"
-  type        = string
-  default     = "my-key.pub"  # Path to the key pair file in Jenkins workspace
-}
 
-resource "aws_security_group" "instance_sg" {
-  name        = "instance-sg"
-  description = "Security group for EC2 instance allowing SSH from Jenkins"
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.jenkins_ip]
-  }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
-  tags = {
-    Name = "InstanceSecurityGroup"
-  }
-}
 
-resource "aws_instance" "example" {
-  ami             = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
-  instance_type   = var.instance_type
-  key_name        = var.keypair_name
-  security_groups = [aws_security_group.instance_sg.name]
 
   provisioner "remote-exec" {
     inline = [
@@ -72,7 +43,7 @@ resource "aws_instance" "example" {
       private_key = file(var.keypair_name)
       host        = aws_instance.example.public_ip
     }
-  }
-}
+  
 
+}
 
