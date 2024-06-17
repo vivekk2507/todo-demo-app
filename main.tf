@@ -20,20 +20,50 @@ variable "jenkins_ip" {
   default     = "43.204.143.128/32"
 }
 
+# Check if key pair exists
+data "aws_key_pair" "existing_key" {
+  key_name = "checkt"
+
+  # Ignore errors if key pair doesn't exist
+  depends_on = []
+  lifecycle {
+    ignore_errors = true
+  }
+}
+
+# Create key pair if it doesn't exist
+resource "tls_private_key" "example_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+  count     = data.aws_key_pair.existing_key.id != "" ? 0 : 1
+}
+
 resource "aws_key_pair" "example_key" {
-  key_name   = "example-key"
-  public_key = tls_private_key.example_key.public_key_openssh
+  key_name   = "checkt"
+  public_key = tls_private_key.example_key[0].public_key_openssh
 
   lifecycle {
     ignore_changes = [public_key]
   }
+
+  count = data.aws_key_pair.existing_key.id != "" ? 0 : 1
 }
 
-resource "tls_private_key" "example_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
+# Check if security group exists
+data "aws_security_group" "existing_sg" {
+  filter {
+    name   = "group-name"
+    values = ["instance-sg"]
+  }
+
+  # Ignore errors if security group doesn't exist
+  depends_on = []
+  lifecycle {
+    ignore_errors = true
+  }
 }
 
+# Create security group if it doesn't exist
 resource "aws_security_group" "instance_sg" {
   name        = "instance-sg"
   description = "Security group for EC2 instance allowing SSH from Jenkins"
@@ -59,13 +89,15 @@ resource "aws_security_group" "instance_sg" {
   tags = {
     Name = "InstanceSecurityGroup"
   }
+
+  count = data.aws_security_group.existing_sg.id != "" ? 0 : 1
 }
 
 resource "aws_instance" "example" {
   ami             = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
   instance_type   = var.instance_type
-  key_name        = aws_key_pair.example_key.key_name
-  security_groups = [aws_security_group.instance_sg.name]
+  key_name        = data.aws_key_pair.existing_key.id != "" ? data.aws_key_pair.existing_key.key_name : aws_key_pair.example_key[0].key_name
+  security_groups = [data.aws_security_group.existing_sg.id != "" ? data.aws_security_group.existing_sg.name : aws_security_group.instance_sg[0].name]
 
   lifecycle {
     ignore_changes = [tags]
@@ -85,10 +117,9 @@ resource "aws_instance" "example" {
     connection {
       type        = "ssh"
       user        = "ubuntu"  # Replace with appropriate user for your AMI
-      private_key = tls_private_key.example_key.private_key_pem
+      private_key = tls_private_key.example_key[0].private_key_pem
       host        = aws_instance.example.public_ip
     }
   }
 }
-
 
