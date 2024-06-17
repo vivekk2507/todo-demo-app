@@ -34,7 +34,7 @@ data "aws_security_group" "existing_sg" {
   name = "instance-sg"
 }
 
-resource "aws_key_pair" "example_key" {
+resource "aws_key_pair" "checkt" {
   count     = length(data.aws_key_pair.existing_key) == 0 ? 1 : 0
   key_name  = var.keypair_name
   public_key = tls_private_key.example_key.public_key_openssh
