@@ -34,16 +34,16 @@ data "aws_security_group" "existing_sg" {
   name = "instance-sg"
 }
 
+resource "tls_private_key" "checkt" {
+  count = length(data.aws_key_pair.existing_key) == 0 ? 1 : 0
+  algorithm = "RSA"
+  rsa_bits = 4096
+}
+
 resource "aws_key_pair" "checkt" {
   count     = length(data.aws_key_pair.existing_key) == 0 ? 1 : 0
   key_name  = var.keypair_name
-  public_key = tls_private_key.checkt.public_key_openssh
-}
-
-resource "tls_private_key" "checkt" {
-  count       = length(data.aws_key_pair.existing_key) == 0 ? 1 : 0
-  algorithm   = "RSA"
-  rsa_bits    = 4096
+  public_key = tls_private_key.checkt[count.index].public_key_openssh
 }
 
 resource "aws_security_group" "instance_sg" {
@@ -96,3 +96,4 @@ resource "aws_instance" "example" {
     }
   }
 }
+
