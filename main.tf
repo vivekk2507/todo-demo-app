@@ -1,66 +1,42 @@
 provider "aws" {
-  region = var.region  # Use the region variable here
+  region = var.region
 }
 
-# Define input variables
 variable "region" {
   description = "AWS region"
   type        = string
-  default     = "ap-south-1"  # Default region
+  default     = "ap-south-1"
 }
 
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t3.medium"  # Default instance type
+  default     = "t3.medium"
 }
 
 variable "jenkins_ip" {
   description = "Jenkins' IP address for SSH access in CIDR notation (e.g., x.x.x.x/32)"
   type        = string
-  default     = "43.204.143.128/32"  # Replace with your Jenkins IP address in CIDR notation
+  default     = "43.204.143.128/32"
 }
 
-# Generate SSH key pair
-resource "tls_private_key" "example_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-# Save the public key to a local file
-resource "local_file" "public_key" {
-  filename = "${path.module}/id_rsa.pub"
-  content  = tls_private_key.example_key.public_key_openssh
-}
-
-# Create an AWS key pair using the generated SSH key, if it does not exist
 resource "aws_key_pair" "example_key" {
   key_name   = "example-key"
   public_key = tls_private_key.example_key.public_key_openssh
 
-  # Condition to create the key pair only if it does not already exist
   lifecycle {
     ignore_changes = [public_key]
   }
-
-  # Only create the key pair if it does not exist
-  count = length(aws_key_pair.example_key[*].key_name) == 0 ? 1 : 0
 }
 
-# Create a security group allowing SSH access from Jenkins IP, if it does not exist
 resource "aws_security_group" "instance_sg" {
   name        = "instance-sg"
   description = "Security group for EC2 instance allowing SSH from Jenkins"
 
-  # Condition to create the security group only if it does not already exist
   lifecycle {
     ignore_changes = [tags]
   }
 
-  # Only create the security group if it does not exist
-  count = length(aws_security_group.instance_sg[*].name) == 0 ? 1 : 0
-
-  # Define ingress and egress rules
   ingress {
     from_port   = 22
     to_port     = 22
@@ -80,16 +56,14 @@ resource "aws_security_group" "instance_sg" {
   }
 }
 
-# Launch an EC2 instance
 resource "aws_instance" "example" {
-  count           = length(aws_key_pair.example_key[*].key_name) > 0 ? 1 : 0  # Only create if key pair exists
   ami             = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
-  instance_type   = var.instance_type        # Use the variable for instance type
-  key_name        = aws_key_pair.example_key[0].key_name  # Access key name with index
-  security_groups = [aws_security_group.instance_sg[0].name]  # Access security group with index
+  instance_type   = var.instance_type
+  key_name        = aws_key_pair.example_key[0].key_name
+  security_groups = [aws_security_group.instance_sg[0].name]
 
-  tags = {
-    Name = "QuarkusAppInstance"
+  lifecycle {
+    ignore_changes = [tags]
   }
 
   provisioner "remote-exec" {
@@ -105,9 +79,9 @@ resource "aws_instance" "example" {
 
     connection {
       type        = "ssh"
-      user        = "ubuntu"  # Replace with the appropriate user for your AMI
+      user        = "ubuntu"  # Replace with appropriate user for your AMI
       private_key = tls_private_key.example_key.private_key_pem
-      host        = aws_instance.example.public_ip
+      host        = aws_instance.example[0].public_ip  # Access public_ip with index
     }
   }
 }
