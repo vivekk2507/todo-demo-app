@@ -2,21 +2,25 @@ provider "aws" {
   region = var.region
 }
 
+# Create TLS private key
 resource "tls_private_key" "checkt" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
+# Save private key to a local file
 resource "local_file" "private_key_pem" {
   content  = tls_private_key.checkt.private_key_pem
   filename = "${path.module}/checkt.pem"
 }
 
+# Create AWS key pair using the public key
 resource "aws_key_pair" "checkt" {
   key_name   = var.keypair_name
   public_key = tls_private_key.checkt.public_key_openssh
 }
 
+# Security group for the instance
 resource "aws_security_group" "instance_sg" {
   name        = "instance-sg"
   description = "Security group for EC2 instance allowing SSH from Jenkins"
@@ -40,10 +44,11 @@ resource "aws_security_group" "instance_sg" {
   }
 }
 
+# Create the EC2 instance
 resource "aws_instance" "example" {
   ami             = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
   instance_type   = var.instance_type
-  key_name        = aws_key_pair.checkt.key_name
+  key_name        = var.keypair_name
   security_groups = [aws_security_group.instance_sg.name]
 
   provisioner "remote-exec" {
@@ -66,8 +71,8 @@ resource "aws_instance" "example" {
   }
 }
 
+# Output the path to the private key
 output "private_key_path" {
   value = local_file.private_key_pem.filename
 }
-
 
