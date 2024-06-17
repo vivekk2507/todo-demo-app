@@ -20,21 +20,10 @@ variable "jenkins_ip" {
   default     = "43.204.143.128/32"
 }
 
-variable "keypair_path" {
-  description = "Path to the Jenkins key pair"
+variable "keypair_name" {
+  description = "Name of the AWS key pair"
   type        = string
-  default     = "/var/lib/jenkins/workspace/my-key.pub"
-}
-
-data "aws_key_pair" "existing_key" {
-  key_name = "dummy_key_name"  # Just a dummy name since we're not using AWS key pair
-  public_key = file(var.keypair_path)
-}
-
-resource "tls_private_key" "checkt" {
-  count     = 1
-  algorithm = "RSA"
-  rsa_bits  = 4096
+  default     = "/var/lib/jenkins/workspace/my-key.pub"  # Path to the key pair file in Jenkins workspace
 }
 
 resource "aws_security_group" "instance_sg" {
@@ -63,7 +52,7 @@ resource "aws_security_group" "instance_sg" {
 resource "aws_instance" "example" {
   ami             = "ami-0f58b397bc5c1f2e8"  # Replace with a valid Ubuntu AMI ID for ap-south-1
   instance_type   = var.instance_type
-  key_name        = "dummy_key_name"  # Just a dummy name since we're not using AWS key pair
+  key_name        = var.keypair_name
   security_groups = [aws_security_group.instance_sg.name]
 
   provisioner "remote-exec" {
@@ -80,7 +69,7 @@ resource "aws_instance" "example" {
     connection {
       type        = "ssh"
       user        = "ubuntu"  # Replace with appropriate user for your AMI
-      private_key = tls_private_key.checkt[0].private_key_pem
+      private_key = file(var.keypair_name)
       host        = aws_instance.example.public_ip
     }
   }
