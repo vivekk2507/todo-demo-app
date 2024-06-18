@@ -32,22 +32,14 @@ pipeline {
         
         stage('Build with Maven') {
             steps {
-                 script {
+                script {
                     sh 'mvn clean package -DskipTests'
                     sh 'mvn quarkus:build -Dquarkus.package.type=fast-jar'
                 }
             }
         }
         
-         //stage('Code Quality Check with SonarQube') {
-          //  steps {
-           //  withSonarQubeEnv(SONARQUBE_ENV) {
-             //  sh 'mvn sonar:sonar'
-             //  }
-         // }
-     // }
-        
-    stage('Prepare Docker Context') {
+        stage('Prepare Docker Context') {
             steps {
                 script {
                     sh '''
@@ -58,6 +50,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Build Docker Image') {
             steps {
                 script {
@@ -67,16 +60,22 @@ pipeline {
                         pwd
                         echo "Directory Contents:"
                         ls -l
-                        docker build -t my-docker-image:latest -f Dockerfile.jvm .
+                        docker build -t ${DOCKER_IMAGE} -f Dockerfile.jvm .
                     '''
                 }
             }
         }
 
-        
-        stage('Create Container Image for PostgreSQL') {
+        stage('Run PostgreSQL Container') {
             steps {
-                sh "docker build -t ${POSTGRESQL_IMAGE} -f path/to/your/postgresql/Dockerfile ."
+                sh '''
+                    docker run --ulimit memlock=-1:-1 -d --rm=true \
+                        --name postgres-quarkus-rest-http-crud \
+                        -e POSTGRES_USER=restcrud \
+                        -e POSTGRES_PASSWORD=restcrud \
+                        -e POSTGRES_DB=rest-crud \
+                        -p 5432:5432 ${POSTGRESQL_IMAGE}
+                '''
             }
         }
         
@@ -114,7 +113,7 @@ pipeline {
             }
         }
         
-        stage('Apply Prometheus and Grafana using Terraform or Helm') {
+        stage('Apply Prometheus and Grafana using Helm') {
             steps {
                 script {
                     sh 'helm repo add prometheus-community https://prometheus-community.github.io/helm-charts'
@@ -131,5 +130,12 @@ pipeline {
                 sh 'kubectl apply -f path/to/prometheus/alerts'
             }
         }
+        
+        stage('Run Quarkus Application') {
+            steps {
+                sh 'java -jar target/quarkus-app/quarkus-run.jar'
+            }
+        }
     }
 }
+
