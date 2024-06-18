@@ -7,7 +7,7 @@ pipeline {
         GITHUB_CREDENTIALS = 'github-pat'
         GITHUB_REPO = 'https://github.com/vivekk2507/todo-demo-app'
         DOCKER_IMAGE = 'my-docker-image:latest'
-        POSTGRESQL_IMAGE = 'postgresql-image:latest'
+        POSTGRESQL_IMAGE = 'postgres:14' // PostgreSQL image from Docker Hub
     }
     
     stages {
@@ -66,6 +66,14 @@ pipeline {
             }
         }
 
+        stage('Pull PostgreSQL Docker Image') {
+            steps {
+                script {
+                    sh "docker pull ${POSTGRESQL_IMAGE}"
+                }
+            }
+        }
+        
         stage('Run PostgreSQL Container') {
             steps {
                 sh '''
@@ -84,7 +92,6 @@ pipeline {
                 script {
                     docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
                         sh "docker push ${DOCKER_IMAGE}"
-                        sh "docker push ${POSTGRESQL_IMAGE}"
                     }
                 }
             }
