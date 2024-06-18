@@ -14,11 +14,11 @@ pipeline {
         stage('Generate SSH Key Pair') {
             steps {
                 script {
+                    // Generate SSH key pair if not already present
                     sh '''
-                        if [ -f my-key ]; then
-                            rm my-key my-key.pub
+                        if [ ! -f my-key ]; then
+                            ssh-keygen -t rsa -b 2048 -f my-key -N ""
                         fi
-                        ssh-keygen -t rsa -b 2048 -f my-key -N ""
                     '''
                 }
             }
@@ -26,6 +26,7 @@ pipeline {
         
         stage('Checkout SCM') {
             steps {
+                // Checkout code from GitHub repository
                 git branch: 'main', credentialsId: GITHUB_CREDENTIALS, url: GITHUB_REPO
             }
         }
@@ -33,6 +34,7 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 script {
+                    // Build the Quarkus application with Maven
                     sh 'mvn clean package -DskipTests'
                     sh 'mvn quarkus:build -Dquarkus.package.type=fast-jar'
                 }
@@ -42,6 +44,7 @@ pipeline {
         stage('Prepare Docker Context') {
             steps {
                 script {
+                    // Prepare Docker context for building Docker image
                     sh '''
                         mkdir -p docker-context/target/quarkus-app
                         cp -r target/quarkus-app/app target/quarkus-app/lib target/quarkus-app/quarkus target/quarkus-app/quarkus-app-dependencies.txt target/quarkus-app/quarkus-run.jar docker-context/target/quarkus-app/
@@ -54,12 +57,9 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Build Docker image using Dockerfile.jvm
                     sh '''
                         cd docker-context
-                        echo "Current Directory:"
-                        pwd
-                        echo "Directory Contents:"
-                        ls -l
                         docker build -t ${DOCKER_IMAGE} -f Dockerfile.jvm .
                     '''
                 }
@@ -69,27 +69,41 @@ pipeline {
         stage('Pull PostgreSQL Docker Image') {
             steps {
                 script {
-                    sh "docker pull ${POSTGRESQL_IMAGE}"
+                    // Pull PostgreSQL Docker image from Docker Hub
+                    docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
+                        sh "docker pull ${POSTGRESQL_IMAGE}"
+                    }
                 }
             }
         }
         
         stage('Run PostgreSQL Container') {
             steps {
-                sh '''
-                    docker run --ulimit memlock=-1:-1 -d --rm=true \
-                        --name postgres-quarkus-rest-http-crud \
-                        -e POSTGRES_USER=restcrud \
-                        -e POSTGRES_PASSWORD=restcrud \
-                        -e POSTGRES_DB=rest-crud \
-                        -p 5433:5432 ${POSTGRESQL_IMAGE}
-                '''
+                script {
+                    // Stop and remove any existing container with the same name
+                    sh '''
+                        if [ $(docker ps -a -q -f name=postgres-quarkus-rest-http-crud) ]; then
+                            docker stop postgres-quarkus-rest-http-crud
+                            docker rm postgres-quarkus-rest-http-crud
+                        fi
+                    '''
+                    // Run PostgreSQL container
+                    sh '''
+                        docker run --ulimit memlock=-1:-1 -d --rm=true \
+                            --name postgres-quarkus-rest-http-crud \
+                            -e POSTGRES_USER=restcrud \
+                            -e POSTGRES_PASSWORD=restcrud \
+                            -e POSTGRES_DB=rest-crud \
+                            -p 5433:5432 ${POSTGRESQL_IMAGE}
+                    '''
+                }
             }
         }
         
-        stage('Push Docker Images to Docker Hub') {
+        stage('Push Docker Image to Docker Hub') {
             steps {
                 script {
+                    // Push Docker image to Docker Hub
                     docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
                         sh "docker push ${DOCKER_IMAGE}"
                     }
@@ -100,6 +114,7 @@ pipeline {
         stage('Create Infrastructure using Terraform') {
             steps {
                 dir('terraform') {
+                    // Initialize Terraform and apply infrastructure changes
                     sh 'terraform init'
                     sh 'terraform apply -auto-approve'
                 }
@@ -109,6 +124,7 @@ pipeline {
         stage('Deploy App using Terraform') {
             steps {
                 dir('terraform') {
+                    // Deploy application using Terraform
                     sh 'terraform apply -auto-approve'
                 }
             }
@@ -116,6 +132,7 @@ pipeline {
         
         stage('Apply Orchestration using Kubernetes') {
             steps {
+                // Apply Kubernetes resources
                 sh 'kubectl apply -f path/to/kubernetes/resources'
             }
         }
@@ -123,6 +140,7 @@ pipeline {
         stage('Apply Prometheus and Grafana using Helm') {
             steps {
                 script {
+                    // Add Helm repositories and install Prometheus and Grafana
                     sh 'helm repo add prometheus-community https://prometheus-community.github.io/helm-charts'
                     sh 'helm repo add grafana https://grafana.github.io/helm-charts'
                     sh 'helm repo update'
@@ -134,14 +152,17 @@ pipeline {
         
         stage('Create Alerts using Prometheus') {
             steps {
+                // Apply Prometheus alerts
                 sh 'kubectl apply -f path/to/prometheus/alerts'
             }
         }
         
         stage('Run Quarkus Application') {
             steps {
+                // Run Quarkus application
                 sh 'java -jar target/quarkus-app/quarkus-run.jar'
             }
         }
     }
 }
+
