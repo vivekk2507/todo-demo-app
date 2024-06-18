@@ -105,7 +105,7 @@ pipeline {
         
       stage('Create Infrastructure using Terraform') {
     steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'awsc']]) {
             dir('terraform') {
                 script {
                     sh 'terraform init'
