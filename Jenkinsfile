@@ -47,20 +47,28 @@ pipeline {
          // }
      // }
         
-    
     stage('Prepare Docker Context') {
             steps {
                 script {
-                    sh 'mkdir -p docker-context/target/quarkus-app'
-                    sh 'cp -r target/quarkus-app/app target/quarkus-app/lib target/quarkus-app/quarkus target/quarkus-app/quarkus-app-dependencies.txt target/quarkus-app/quarkus-run.jar docker-context/target/quarkus-app/'
+                    sh '''
+                        mkdir -p docker-context/target/quarkus-app
+                        cp -r target/quarkus-app/app target/quarkus-app/lib target/quarkus-app/quarkus target/quarkus-app/quarkus-app-dependencies.txt target/quarkus-app/quarkus-run.jar docker-context/target/quarkus-app/
+                        cp src/main/docker/Dockerfile.jvm docker-context/
+                    '''
                 }
             }
         }
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'cd docker-context && echo Current Directory: && pwd && echo Directory Contents: && ls -l'
-                    sh 'docker build -t my-docker-image:latest -f ../src/main/docker/Dockerfile.jvm .'
+                    sh '''
+                        cd docker-context
+                        echo "Current Directory:"
+                        pwd
+                        echo "Directory Contents:"
+                        ls -l
+                        docker build -t my-docker-image:latest -f Dockerfile.jvm .
+                    '''
                 }
             }
         }
