@@ -46,18 +46,23 @@ pipeline {
          // }
      // }
         
+    
         stage('Build Docker Image') {
             steps {
-
-                 // Change to the directory containing the Dockerfile
-                    sh 'cd src/main/docker/Dockerfile.jvm'
-                    // List the contents of the directory to verify the Dockerfile is there
-                    sh 'ls -l'
-                    // Build the Docker image
-                   
-                sh "docker build -t ${DOCKER_IMAGE} ."
+                script {
+                    // Combine the commands into a single shell script block
+                    sh '''
+                        cd src/main/docker
+                        echo "Current Directory:"
+                        pwd
+                        echo "Directory Contents:"
+                        ls -l
+                        docker build -t ${DOCKER_IMAGE} -f Dockerfile.jvm .
+                    '''
+                }
             }
         }
+
         
         stage('Create Container Image for PostgreSQL') {
             steps {
