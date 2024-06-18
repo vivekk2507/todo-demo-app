@@ -2,6 +2,7 @@ pipeline {
     agent any
     
     environment {
+          DOCKERHUB_CREDENTIALS = 'dockerhu'
         GITHUB_CREDENTIALS = 'github-pat'
         GITHUB_REPO = 'https://github.com/vivekk2507/todo-demo-app'
         DOCKER_IMAGE = 'vivekloggedin/my-docker-image:latest'
