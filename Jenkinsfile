@@ -112,6 +112,17 @@ pipeline {
             }
         }
         
+        stage('Setup Terraform Configuration') {
+            steps {
+                script {
+                    // Ensure Terraform configuration files are in place
+                    dir('terraform') {
+                        git branch: 'main', credentialsId: GITHUB_CREDENTIALS, url: 'https://github.com/vivekk2507/terraform-config-repo'
+                    }
+                }
+            }
+        }
+        
         stage('Create Infrastructure using Terraform') {
             steps {
                 dir('terraform') {
