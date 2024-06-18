@@ -84,8 +84,8 @@ pipeline {
                     sh '''
                         CONTAINER_ID=$(docker ps -a -q -f name=postgres-quarkus-rest-http-crud)
                         if [ ! -z "$CONTAINER_ID" ]; then
-                            docker stop $CONTAINER_ID
-                            docker rm $CONTAINER_ID
+                            docker stop $CONTAINER_ID || true
+                            docker rm $CONTAINER_ID || true
                         fi
                     '''
                     // Run PostgreSQL container
