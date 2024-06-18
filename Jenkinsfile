@@ -49,7 +49,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
 
-                
+                 // Change to the directory containing the Dockerfile
+                    sh 'cd path/to/Dockerfile_directory'
+                    // List the contents of the directory to verify the Dockerfile is there
+                    sh 'ls -l'
+                    // Build the Docker image
+                   
                 sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
