@@ -2,11 +2,9 @@ pipeline {
     agent any
     
     environment {
-        DOCKERHUB_CREDENTIALS = 'dockerhu'
-        SONARQUBE_ENV = 'SonarQube'
-        GITHUB_CREDENTIALS = 'github-pat'
-        GITHUB_REPO = 'https://github.com/vivekk2507/todo-demo-app'
-        DOCKER_IMAGE = 'my-docker-image:latest'
+        DOCKERHUB_USERNAME = credentials('dockerhub-username') // Jenkins credential ID for Docker Hub username
+        DOCKERHUB_PASSWORD = credentials('dockerhub-password') // Jenkins credential ID for Docker Hub password
+        DOCKER_IMAGE = 'vivekloggedin/my-docker-image:latest' // Adjust repository name accordingly
         POSTGRESQL_IMAGE = 'docker.io/library/postgres:14'
     }
     
@@ -26,13 +24,13 @@ pipeline {
         
         stage('Checkout SCM') {
             steps {
-                git branch: 'main', credentialsId: GITHUB_CREDENTIALS, url: GITHUB_REPO
+                git branch: 'main', credentialsId: 'github-pat', url: 'https://github.com/vivekk2507/todo-demo-app'
             }
         }
         
         stage('Build with Maven') {
             steps {
-                script {
+                 script {
                     sh 'mvn clean package -DskipTests'
                     sh 'mvn quarkus:build -Dquarkus.package.type=fast-jar'
                 }
@@ -87,11 +85,13 @@ pipeline {
             }
         }
         
-        stage('Push Docker Images to Docker Hub') {
+        stage('Push Docker Image to Docker Hub') {
             steps {
                 script {
-                    docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
-                        sh "docker push ${DOCKER_IMAGE}"
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
+                        docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_USERNAME, DOCKERHUB_PASSWORD) {
+                            sh "docker push ${DOCKER_IMAGE}"
+                        }
                     }
                 }
             }
@@ -145,4 +145,3 @@ pipeline {
         }
     }
 }
-
