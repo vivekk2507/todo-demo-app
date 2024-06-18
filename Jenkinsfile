@@ -50,7 +50,7 @@ pipeline {
             steps {
 
                  // Change to the directory containing the Dockerfile
-                    sh 'cd path/to/Dockerfile_directory'
+                    sh 'cd src/main/docker/Dockerfile.jvm'
                     // List the contents of the directory to verify the Dockerfile is there
                     sh 'ls -l'
                     // Build the Docker image
