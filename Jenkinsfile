@@ -8,7 +8,7 @@ pipeline {
         GITHUB_REPO = 'https://github.com/vivekk2507/todo-demo-app'
         DOCKER_IMAGE = 'vivekloggedin/my-docker-image:latest'
         POSTGRESQL_IMAGE = 'docker.io/library/postgres:14'
-        AWS_CREDENTIALS = 'awsc' // Replace with your AWS credentials ID in Jenkins
+        AWS_CREDENTIALS = 'credentials('awsc')' // Replace with your AWS credentials ID in Jenkins
     }
     
     stages {
