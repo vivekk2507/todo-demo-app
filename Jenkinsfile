@@ -7,7 +7,7 @@ pipeline {
         GITHUB_CREDENTIALS = 'github-pat'
         GITHUB_REPO = 'https://github.com/vivekk2507/todo-demo-app'
         DOCKER_IMAGE = 'my-docker-image:latest'
-        POSTGRESQL_IMAGE = 'postgres:14' // PostgreSQL image from Docker Hub
+        POSTGRESQL_IMAGE = 'docker.io/library/postgres:14'
     }
     
     stages {
@@ -82,7 +82,7 @@ pipeline {
                         -e POSTGRES_USER=restcrud \
                         -e POSTGRES_PASSWORD=restcrud \
                         -e POSTGRES_DB=rest-crud \
-                        -p 5432:5432 ${POSTGRESQL_IMAGE}
+                        -p 5433:5432 ${POSTGRESQL_IMAGE}
                 '''
             }
         }
