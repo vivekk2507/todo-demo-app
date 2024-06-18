@@ -41,4 +41,6 @@ resource "aws_instance" "ubuntu-vm-instance" {
     Name = "ubuntu-vm"
   }
 }
-
+output "public_ip" {
+  value = aws_instance.example.public_ip
+}
