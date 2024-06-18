@@ -33,10 +33,15 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 script {
-                    // Build the Quarkus project
+                   // Build the Quarkus project
                     sh 'mvn clean package -DskipTests'
                     // Ensure the Quarkus application is built
                     sh 'mvn quarkus:build -Dquarkus.package.type=fast-jar'
+                    // Verify the contents of target/quarkus-app
+                    sh '''
+                        echo "Checking target/quarkus-app directory:"
+                        ls -l target/quarkus-app
+                    '''
                 }
             }
         }
@@ -53,13 +58,14 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Combine the commands into a single shell script block
+                    // Navigate to the Dockerfile directory and build the Docker image
                     sh '''
                         cd src/main/docker
                         echo "Current Directory:"
                         pwd
                         echo "Directory Contents:"
                         ls -l
+                        echo "Building Docker image..."
                         docker build -t ${DOCKER_IMAGE} -f Dockerfile.jvm .
                     '''
                 }
