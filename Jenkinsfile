@@ -33,7 +33,10 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 script {
+                    // Build the Quarkus project
                     sh 'mvn clean package -DskipTests'
+                    // Ensure the Quarkus application is built
+                    sh 'mvn quarkus:build -Dquarkus.package.type=fast-jar'
                 }
             }
         }
