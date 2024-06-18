@@ -32,16 +32,9 @@ pipeline {
         
         stage('Build with Maven') {
             steps {
-                script {
-                    // Build the Quarkus project
+                 script {
                     sh 'mvn clean package -DskipTests'
-                    // Ensure the Quarkus application is built
                     sh 'mvn quarkus:build -Dquarkus.package.type=fast-jar'
-                    // Verify the contents of target/quarkus-app
-                    sh '''
-                        echo "Checking target/quarkus-app directory:"
-                        ls -l target/quarkus-app
-                    '''
                 }
             }
         }
@@ -55,30 +48,19 @@ pipeline {
      // }
         
     
-       stage('Prepare Docker Context') {
+    stage('Prepare Docker Context') {
             steps {
                 script {
-                    // Copy the necessary files to a Docker context directory
-                    sh '''
-                        mkdir -p docker-context/target/quarkus-app
-                        cp -r target/quarkus-app/* docker-context/target/quarkus-app/
-                    '''
+                    sh 'mkdir -p docker-context/target/quarkus-app'
+                    sh 'cp -r target/quarkus-app/app target/quarkus-app/lib target/quarkus-app/quarkus target/quarkus-app/quarkus-app-dependencies.txt target/quarkus-app/quarkus-run.jar docker-context/target/quarkus-app/'
                 }
             }
         }
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Navigate to the Dockerfile directory and build the Docker image
-                    sh '''
-                        cd src/main/docker
-                        echo "Current Directory:"
-                        pwd
-                        echo "Directory Contents:"
-                        ls -l
-                        echo "Building Docker image..."
-                        docker build -t ${DOCKER_IMAGE} -f Dockerfile.jvm ../../docker-context
-                    '''
+                    sh 'cd docker-context && echo Current Directory: && pwd && echo Directory Contents: && ls -l'
+                    sh 'docker build -t my-docker-image:latest -f ../src/main/docker/Dockerfile.jvm .'
                 }
             }
         }
