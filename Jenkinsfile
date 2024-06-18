@@ -6,7 +6,7 @@ pipeline {
         SONARQUBE_ENV = 'SonarQube'
         GITHUB_CREDENTIALS = 'github-pat'
         GITHUB_REPO = 'https://github.com/vivekk2507/todo-demo-app'
-        DOCKER_IMAGE = 'my-docker-image:latest'
+        DOCKER_IMAGE = 'vivekloggedin/my-docker-image:latest'
         POSTGRESQL_IMAGE = 'docker.io/library/postgres:14'
     }
     
@@ -166,4 +166,3 @@ pipeline {
         }
     }
 }
-
