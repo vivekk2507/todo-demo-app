@@ -14,11 +14,10 @@ pipeline {
         stage('Generate SSH Key Pair') {
             steps {
                 script {
-                    // Generate SSH key pair if not already present
+                    // Generate SSH key pair in the terraform directory
                     sh '''
-                        if [ ! -f my-key ]; then
-                            ssh-keygen -t rsa -b 2048 -f my-key -N ""
-                        fi
+                        mkdir -p terraform
+                        ssh-keygen -t rsa -b 2048 -f terraform/my-key -N ""
                     '''
                 }
             }
@@ -107,17 +106,6 @@ pipeline {
                     // Push Docker image to Docker Hub
                     docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
                         sh "docker push ${DOCKER_IMAGE}"
-                    }
-                }
-            }
-        }
-        
-        stage('Setup Terraform Configuration') {
-            steps {
-                script {
-                    // Ensure Terraform configuration files are in place
-                    dir('terraform') {
-                        git branch: 'main', credentialsId: GITHUB_CREDENTIALS, url: 'https://github.com/vivekk2507/todo-demo-app'
                     }
                 }
             }
