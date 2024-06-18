@@ -17,7 +17,7 @@ pipeline {
                     // Generate SSH key pair in the terraform directory
                     sh '''
                         mkdir -p terraform
-                        ssh-keygen -t rsa -b 2048 -f terraform/my-key -N ""
+                        ssh-keygen -t rsa -b 2048 -f terraform/my-key -N "" -y
                     '''
                 }
             }
