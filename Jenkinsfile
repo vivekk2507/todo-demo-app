@@ -2,8 +2,6 @@ pipeline {
     agent any
     
     environment {
-        DOCKERHUB_CREDENTIALS = 'dockerhu'
-        SONARQUBE_ENV = 'SonarQube'
         GITHUB_CREDENTIALS = 'github-pat'
         GITHUB_REPO = 'https://github.com/vivekk2507/todo-demo-app'
         DOCKER_IMAGE = 'vivekloggedin/my-docker-image:latest'
@@ -103,25 +101,35 @@ pipeline {
             }
         }
         
-      stage('Create Infrastructure using Terraform') {
-    steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'awsc']]) {
-            dir('terraform') {
-                script {
-                    sh 'terraform init'
-                    sh 'terraform apply -auto-approve'
+        stage('Create Infrastructure using Terraform') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'awsc']]) {
+                    dir('terraform') {
+                        script {
+                            sh 'terraform init'
+                            sh 'terraform apply -auto-approve'
+                            // Capture the public IP from Terraform output
+                            def remoteHost = sh (returnStdout: true, script: 'terraform output -json public_ip') // Adjust the output name as per your Terraform output
+                            // Assign to environment variable
+                            env.REMOTE_HOST = remoteHost.trim()
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
         
-        stage('Deploy App using Terraform') {
+        stage('Deploy Application') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId:'awsc']]) {
-                    dir('terraform') {
-                        sh 'terraform apply -auto-approve'
+                script {
+                    // SSH into remote host and deploy application as Docker container
+                    sshagent(credentials: ['<jenkins_ssh_key_id>']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ubuntu@${REMOTE_HOST} \
+                                'sudo docker pull ${DOCKER_IMAGE} && \
+                                sudo docker stop my-app-container || true && \
+                                sudo docker rm my-app-container || true && \
+                                sudo docker run -d --name my-app-container -p 8080:8080 ${DOCKER_IMAGE}'
+                        """
                     }
                 }
             }
@@ -158,3 +166,4 @@ pipeline {
         }
     }
 }
+
