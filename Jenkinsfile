@@ -117,7 +117,7 @@ pipeline {
                 script {
                     // Ensure Terraform configuration files are in place
                     dir('terraform') {
-                        git branch: 'main', credentialsId: GITHUB_CREDENTIALS, url: 'https://github.com/vivekk2507/terraform-config-repo'
+                        git branch: 'main', credentialsId: GITHUB_CREDENTIALS, url: 'https://github.com/vivekk2507/todo-demo-app'
                     }
                 }
             }
