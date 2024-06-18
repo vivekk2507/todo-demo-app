@@ -82,9 +82,10 @@ pipeline {
                 script {
                     // Stop and remove any existing container with the same name
                     sh '''
-                        if [ $(docker ps -a -q -f name=postgres-quarkus-rest-http-crud) ]; then
-                            docker stop postgres-quarkus-rest-http-crud
-                            docker rm postgres-quarkus-rest-http-crud
+                        CONTAINER_ID=$(docker ps -a -q -f name=postgres-quarkus-rest-http-crud)
+                        if [ ! -z "$CONTAINER_ID" ]; then
+                            docker stop $CONTAINER_ID
+                            docker rm $CONTAINER_ID
                         fi
                     '''
                     // Run PostgreSQL container
