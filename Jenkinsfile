@@ -103,16 +103,19 @@ pipeline {
             }
         }
         
-        stage('Create Infrastructure using Terraform') {
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: AWS_CREDENTIALS]]) {
-                    dir('terraform') {
-                        sh 'terraform init'
-                        sh 'terraform apply -auto-approve'
-                    }
+      stage('Create Infrastructure using Terraform') {
+    steps {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
+            dir('terraform') {
+                script {
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
                 }
             }
         }
+    }
+}
+
         
         stage('Deploy App using Terraform') {
             steps {
